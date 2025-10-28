@@ -10,17 +10,19 @@ potion = Item("Potion", 20, 300, "Restaure 20 PV.")
 super_potion = Item("Super Potion", 50, 700, "Restaure 50 PV.")
 boutique = Boutique([potion, super_potion])
 
+test = lst_pokemon[:5] # redefine your list 
+pkm_new = [] # remove that after
+for i in test: # you want to use comprehension list 
+    pkm_new.append(i)
 # --- Création des arènes ---
-# Les indices utilisés dans lst_pokemon doivent correspondre à des Pokémon existants de chaque type.
-# Arguments requis : nom, type_arene, maitre, pokemon_defense, recompense, niveau, badge
 arene_feu = Arene(
-    "Arène Flamme",                     # nom
-    "Feu",                              # type_arene
-    "Pyro",                             # maitre
-    [lst_pokemon[3], lst_pokemon[4]],   # pokemon_defense (existant dans lst_pokemon)
-    "Badge Flamme",                     # recompense
-    3,                                  # niveau
-    "Badge Flamme"                      # badge
+    "Arène Flamme",                
+    "Feu",                            
+    "Pyro",                      
+    pkm_new,  
+    "Badge Flamme",                    
+    3,                                  
+    "Badge Flamme"                   
 )
 arene_eau = Arene(
     "Arène Océan",
@@ -127,18 +129,14 @@ def combat(pokemon_joueur, arene):
         if adversaire.pv <= 0:
             print(f"Tu as gagné le combat niveau {niveau_actuel}.\n")
             niveau_actuel += 1
-            # Restaure les PV du joueur pour le prochain combat
             pokemon_joueur.pv = pokemon_joueur_pv_initial
-            # Restaure les PV de l'adversaire pour le cas où il serait choisi à nouveau
             adversaire.pv = adversaire_pv_initial
         else:
             print("Tu peux réessayer ce niveau.")
-            # Restaure les PV du joueur pour réessayer le même niveau
             pokemon_joueur.pv = pokemon_joueur_pv_initial
             adversaire.pv = adversaire_pv_initial
-            # Ne pas incrémenter niveau_actuel pour rester au même étage
 
-    # Combat final (niveau 5) contre le boss
+    # Combat final (niveau 5) contre le boss de notre arène
     adversaire = arene.pokemon_defense[-1]
     print(f"\nCombat final contre le boss {adversaire.nom} dans {arene.nom}.")
 
@@ -169,7 +167,6 @@ def combat(pokemon_joueur, arene):
         if pokemon_joueur.pv <= 0:
             print(f"\n{pokemon_joueur.nom} est K.O. Tu as perdu le combat final.")
             print("Tu peux réessayer le combat final.")
-            # Restaure les PV du joueur et du boss pour réessayer
             pokemon_joueur.pv = pokemon_joueur_pv_initial
             adversaire.pv = adversaire_pv_initial
 
@@ -184,46 +181,46 @@ def menu_principal():
     print("Bienvenue dans le monde des Pokémon !")
     print("Prépare-toi pour une aventure incroyable.\n")
 
-    # Étape 1 : Choix du dresseur
     dresseur = choisir_dresseur()
 
-    # Variable pour stocker les Pokémon du joueur
-    pokemons_joueur = []
+    pokedex = [] #Je créer cette variable en guise de liste contenant l'ensemble des pokémons de notre dresseur
 
-    # Étape 2 : Confirmation pour lancer le jeu
+    # Début du jeu
     while True:
         lancer = input("\nVeux-tu lancer le jeu ? (oui/non) : ").lower()
         if lancer in ["oui", "o"]:
             print(f"\nLe jeu commence avec {dresseur.nom} !")
 
-            # Étape 3 : Choix du Pokémon de départ
+            # Choix de notre Pokémon de départ
             pokemon_joueur = choisir_pokemon_depart()
-            pokemons_joueur.append(pokemon_joueur)
+            pokedex.append(pokemon_joueur)
             print(f"\nTu as choisi {pokemon_joueur.nom} ({pokemon_joueur.type}) ! Bonne chance !")
 
-            # Étape 4 : Premier combat dans l'Arène Feu
+            # Par défaut j'ai choisi l'arène Flamme en tant que première arène 
             print("\nTu entres dans la première arène : Arène Flamme.")
             victoire = combat(pokemon_joueur, arene_feu)
 
             if victoire:
                 # Choix d'un Pokémon supplémentaire parmi la liste des Pokémon de l'arène, excluant le boss final
                 print("\nChoisis un Pokémon supplémentaire parmi la liste suivante :")
-                pokemons_disponibles = arene_feu.pokemon_defense[:-1]  # Exclure le boss final
-                for i, pkmn in enumerate(pokemons_disponibles, start=1):
+                # Exclure le boss final (dernier Pokémon de la liste)
+                pokemons_choix = [pkmn for pkmn in arene_feu.pokemon_defense[:-1] if pkmn != pokemon_joueur]
+                for i, pkmn in enumerate(pokemons_choix, start=1):
                     print(f"{i}. {pkmn.nom} ({pkmn.type})")
 
                 while True:
                     choix = input("Numéro de ton choix : ")
                     if choix.isdigit():
                         choix = int(choix)
-                        if 1 <= choix <= len(pokemons_disponibles):
-                            nouveau_pokemon = pokemons_disponibles[choix - 1]
-                            pokemons_joueur.append(nouveau_pokemon)
+                        if 1 <= choix <= len(pokemons_choix):
+                            nouveau_pokemon = pokemons_choix[choix - 1]
+                            pokedex.append(nouveau_pokemon)
                             print(f"\nTu as ajouté {nouveau_pokemon.nom} à ton équipe !")
+                            dresseur.deck.append(nouveau_pokemon)  # Ajoute au pokedex du dresseur
                             break
                     print("Choix invalide, réessaie.")
 
-            # Étape 5 : Boutique
+            # Scène boutique
             print("\nAprès le combat, tu découvres la boutique.")
             boutique.afficher_items()
             break
