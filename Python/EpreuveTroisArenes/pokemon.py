@@ -1,93 +1,88 @@
-# Tableau des multiplicateurs de dégâts en fonction du type selon les règles de bases du Jeu
+from random import choice
+
+# --- Tableau d'efficacité entre types ---
 efficacite = {
     "Feu": {"Feu": 1, "Eau": 0.5, "Plante": 2},
     "Eau": {"Feu": 2, "Eau": 1, "Plante": 0.5},
     "Plante": {"Feu": 0.5, "Eau": 2, "Plante": 1}
 }
 
+
+# --- Classe de base ---
 class Pokemon:
-    def __init__(self, nom, type_, pv, attaque, attaque_spe, description=""):
+    def __init__(self, nom, type_, pv, attaques):
         self.nom = nom
         self.type = type_
         self.pv = pv
-        self.attaque = attaque
-        self.attaque_spe = attaque_spe
-        self.description = description
+        self.attaques = attaques  # liste de tuples (nom, dégâts)
 
     def presentation(self):
-        print(f"Je suis {self.nom}, de type {self.type}, avec {self.pv} PV et attaque spéciale : {self.attaque_spe} ({self.attaque} dégâts).")
-        if self.description:
-            print(f"Description : {self.description}")
+        print(f"{self.nom} ({self.type}) - {self.pv} PV")
+        print("Attaques :")
+        for i, (nom, degats) in enumerate(self.attaques, 1):
+            print(f"  {i}. {nom} ({degats} dégâts)")
 
     def attaquer(self, cible):
-            mult = efficacite[self.type][cible.type]
-            degats = int(self.attaque * mult)
-            
-            if mult > 1:
-                print("C'est super efficace ! ⚡")
-            elif mult < 1:
-                print("Ce n'est pas très efficace… 😕")
-            
-            print(f"{self.nom} attaque {cible.nom} avec {self.attaque_spe} et inflige {degats} dégâts 💥 !")
-            cible.pv -= degats
-            if cible.pv < 0:
-                cible.pv = 0
-            print(f"{cible.nom} a maintenant {cible.pv} PV restants.\n")
+        print(f"\nChoisis une attaque pour {self.nom} :")
+        for i, (nom, degats) in enumerate(self.attaques, 1):
+            print(f"{i}. {nom} ({degats} dégâts)")
+
+        while True:
+            choix = input("Numéro de l'attaque : ")
+            if choix.isdigit() and 1 <= int(choix) <= len(self.attaques):
+                attaque_nom, attaque_degats = self.attaques[int(choix) - 1]
+                break
+            print("Choix invalide, réessaie.")
+
+        mult = efficacite[self.type][cible.type]
+        degats = int(attaque_degats * mult)
+
+        if mult > 1:
+            print("C’est super efficace !")
+        elif mult < 1:
+            print("Ce n’est pas très efficace…")
+
+        print(f"{self.nom} utilise {attaque_nom} sur {cible.nom} et inflige {degats} dégâts !")
+        cible.pv = max(0, cible.pv - degats)
+        print(f"{cible.nom} a maintenant {cible.pv} PV restants.\n")
 
 
+# --- Sous-classes par type ---
 class PokemonFeu(Pokemon):
-    def __init__(self, nom, pv, attaque, attaque_spe, description=""):
-        super().__init__(nom, "Feu", pv, attaque, attaque_spe, description)
-
-    def special(self):
-        print(f"{self.nom} lance l'attaque {self.attaque_spe} 🔥 !")
+    def __init__(self, nom, pv, attaques):
+        super().__init__(nom, "Feu", pv, attaques)
 
 
 class PokemonEau(Pokemon):
-    def __init__(self, nom, pv, attaque, attaque_spe, description=""):
-        super().__init__(nom, "Eau", pv, attaque, attaque_spe, description)
-
-    def special(self):
-        print(f"{self.nom} lance {self.attaque_spe} 💧 !")
+    def __init__(self, nom, pv, attaques):
+        super().__init__(nom, "Eau", pv, attaques)
 
 
 class PokemonPlante(Pokemon):
-    def __init__(self, nom, pv, attaque, attaque_spe, description=""):
-        super().__init__(nom, "Plante", pv, attaque, attaque_spe, description)
-
-    def special(self):
-        print(f"{self.nom} lance l'attaque {self.attaque_spe} 🌱 !")
+    def __init__(self, nom, pv, attaques):
+        super().__init__(nom, "Plante", pv, attaques)
 
 
-# --- Exemple de combat ---
-salameche = PokemonFeu("Salamèche", 39, 15, "Flammèche")
-carapuce = PokemonEau("Carapuce", 44, 12, "Pistolet à O")
-
-salameche.presentation()
-carapuce.presentation()
-
-print("\n--- Début du combat ---\n")
-salameche.attaquer(carapuce)
-carapuce.attaquer(salameche)
-
-
-# --- Liste des Pokémon ---
+# --- Liste complète de Pokémon ---
 lst_pokemon = [
-    PokemonEau("Carapuce", 44, 12, "Pistolet à O", "Petite tortue bipède de couleur bleue avec une carapace brune. Elle lance des jets d’écume pour se défendre."),
-    PokemonEau("Magicarpe", 20, 5, "Trempette", "Faible au début, mais peut évoluer en Léviator."),
-    PokemonEau("Stari", 30, 10, "Écume", "Étoile de mer qui peut apprendre des attaques de type Eau et Psy."),
-    PokemonEau("Tartard", 60, 18, "Hydrocanon", "Amphibien puissant avec de bonnes attaques Eau et Combat."),
-    PokemonEau("Lokhlass", 260, 25, "Laser Glace", "Grand Pokémon marin, mélange Eau et Glace, très résistant."),
+    # --- Feu ---
+    PokemonFeu("Salamèche", 39, [("Flammèche", 15), ("Griffe", 10), ("Lance-Flammes", 25)]),
+    PokemonFeu("Ponyta", 50, [("Charge", 10), ("Roue de Feu", 20), ("Flamme Ultime", 30)]),
+    PokemonFeu("Goupix", 38, [("Vive-Attaque", 8), ("Flammèche", 15), ("Déflagration", 28)]),
+    PokemonFeu("Arcanin", 90, [("Crocs Feu", 22), ("Morsure", 18), ("Lance-Flammes", 30)]),
+    PokemonFeu("Magmar", 65, [("Poing Feu", 20), ("Jet de Flamme", 25), ("Explosion", 35)]),
 
-    PokemonFeu("Salameche", 39, 15, "Flammèche", "Pokémon de départ Feu, rapide et offensif."),
-    PokemonFeu("Ponyta", 50, 18, "Flamme", "Cheval enflammé très rapide, attaque par flammes et coups de sabot."),
-    PokemonFeu("Goupix", 38, 14, "Boule de Feu", "Petit renard de feu, peut évoluer en Feunard."),
-    PokemonFeu("Arcanin", 90, 25, "Déflagration", "Rapide et puissant, idéal pour les attaques physiques."),
-    PokemonFeu("Magmar", 65, 20, "Poing Feu", "Pokémon de type Feu aux attaques spéciales puissantes."),
+    # --- Eau ---
+    PokemonEau("Carapuce", 44, [("Pistolet à O", 12), ("Charge", 8), ("Hydrocanon", 25)]),
+    PokemonEau("Magicarpe", 20, [("Trempette", 1), ("Rebond", 8), ("Fléau", 10)]),
+    PokemonEau("Stari", 30, [("Écume", 10), ("Laser Glace", 20), ("Bulles d’O", 15)]),
+    PokemonEau("Tartard", 60, [("Hydrocanon", 25), ("Coup de Poing", 15), ("Cascade", 20)]),
+    PokemonEau("Lokhlass", 130, [("Surf", 25), ("Laser Glace", 28), ("Onde Boréale", 30)]),
 
-    PokemonPlante("Bulbizarre", 45, 12, "Fouet Lianes", "Petit dinosaure avec un bulbe sur son dos qui grandit en une plante."),
-    PokemonPlante("Mystherbe", 60, 15, "Vampigraine", "Plante herbeuse qui peut évoluer en Ortide."),
-    PokemonPlante("Chetiflor", 60, 16, "Tranch'Herbe", "Plante carnivore qui peut évoluer en Empiflor."),
-    PokemonPlante("Arcko", 40, 12, "Poing de Feuille", "Petit lézard agile, spécialisé dans les attaques précises de type Plante."),
-    PokemonPlante("Joliflor", 60, 18, "Giga-Sangsue", "Plante élégante et robuste, évoluée de Chétiflor.")
+    # --- Plante ---
+    PokemonPlante("Bulbizarre", 45, [("Fouet Lianes", 15), ("Tranch’Herbe", 12), ("Canon Graine", 20)]),
+    PokemonPlante("Mystherbe", 60, [("Vampigraine", 12), ("Acide", 10), ("Méga-Sangsue", 18)]),
+    PokemonPlante("Chétiflor", 60, [("Tranch’Herbe", 14), ("Fouet Lianes", 12), ("Poudre Dodo", 10)]),
+    PokemonPlante("Arcko", 40, [("Vive-Attaque", 10), ("Lame Feuille", 18), ("Griffe", 8)]),
+    PokemonPlante("Joliflor", 60, [("Giga-Sangsue", 20), ("Tranch’Herbe", 15), ("Canon Graine", 18)])
 ]
