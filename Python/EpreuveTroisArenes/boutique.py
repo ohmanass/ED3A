@@ -1,0 +1,1 @@
+# Cette classe permettra d'acheter du matériel qui ira directement dans notre inventaire

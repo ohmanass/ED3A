@@ -1,0 +1,1 @@
+#Cette classe sera l'inventaire de notre dresseur, soins, pièces gagnées ect ect
