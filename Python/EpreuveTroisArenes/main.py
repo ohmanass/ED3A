@@ -90,7 +90,7 @@ def choisir_pokemon_depart():
             print("Choix invalide, réessaie.")
 
 # --- Combat tour par tour ---
-def combat(pokemon_joueur, arene):
+def combat(pokemon_joueur, arene, dresseur):
     print("\n" + "-" * 50)
     print(f"DÉBUT DU COMBAT dans {arene.nom} contre les Pokémon de type {arene.type_arene}")
     print("-" * 50)
@@ -145,6 +145,55 @@ def combat(pokemon_joueur, arene):
         else:
             print("Tu peux réessayer ce niveau.")
 
+        # Menu après chaque combat
+        while True:
+            print("\nQue veux-tu faire maintenant ?")
+            print("1. Continuer vers le combat suivant")
+            print("2. Ouvrir la boutique")
+            print("3. Afficher le dictaciel")
+            print("4. Quitter le jeu")
+            choix_action = input("Choisis une option (1-4) : ")
+
+            if choix_action == "1":
+                break  # Passe au combat suivant
+            elif choix_action == "2":
+                while True:
+                    boutique.afficher_items()
+                    choix_achat = input("Veux-tu acheter un item ? (oui/non) : ").lower()
+                    if choix_achat in ['oui', 'o']:
+                        choix_item = input("Entre le numéro de l'item à acheter (ou '0' pour annuler) : ")
+                        if choix_item.isdigit():
+                            choix_item = int(choix_item)
+                            if choix_item == 0:
+                                break
+                            elif 1 <= choix_item <= len(boutique.items):
+                                item_choisi = boutique.items[choix_item - 1]
+                                if dresseur.portefeuille < item_choisi.prix:
+                                    print("Tu n'as pas assez de Pokédollars pour cet item.")
+                                else:
+                                    nb_exemplaires = dresseur.inventaire.items.count(item_choisi)
+                                    if nb_exemplaires >= 2:
+                                        print("Tu as déjà 2 exemplaires de cet item. Tu ne peux pas en acheter plus.")
+                                    else:
+                                        dresseur.portefeuille -= item_choisi.prix
+                                        dresseur.inventaire.items.append(item_choisi)
+                                        print(f"Tu as acheté {item_choisi.nom} pour {item_choisi.prix} Pokédollars.")
+                            else:
+                                print("Numéro invalide.")
+                        else:
+                            print("Entrée invalide.")
+                    elif choix_achat in ['non', 'n']:
+                        break
+                    else:
+                        print("Réponse invalide, tape 'oui' ou 'non'.")
+            elif choix_action == "3":
+                dictaciel_logique()
+            elif choix_action == "4":
+                print("Tu as quitté le jeu. À bientôt !")
+                exit()
+            else:
+                print("Choix invalide, réessaie.")
+
     # Combat final (niveau 5) contre le boss de notre arène
     adversaire = arene.pokemon_defense[-1]
     print("\n" + "=" * 50)
@@ -187,9 +236,14 @@ def combat(pokemon_joueur, arene):
 
 # --- Menu principal ---
 def menu_principal():
-    print("Bienvenue dans Pokémon : Le combat des trois arènes !")
-    print("Prépare-toi pour une aventure incroyable.\n")
-    dictaciel = input("\Veux tu lancer le dictaciel ? (oui/non) : ").lower()
+    print("\n" + "#" * 70)
+    print("#" + " " * 68 + "#")
+    print("#" + " " * 20 + "POKÉMON : LE COMBAT DES TROIS ARÈNES" + " " * 7 + "#")
+    print("#" + " " * 68 + "#")
+    print("#" * 70)
+    print("\nPrépare-toi pour une aventure incroyable et pleine de défis !")
+    print("-" * 70 + "\n")
+    dictaciel = input("Veux tu lancer le dictaciel ? (oui/non) : ").lower()
     if dictaciel in ["oui", "o"]:
         dictaciel_logique()
 
@@ -212,120 +266,147 @@ def menu_principal():
             # Par défaut j'ai choisi l'arène Flamme en tant que première arène 
             print("\nTu entres dans la première arène : Arène Flamme.")
 
-            while True:
-                print("\nMenu avant combat :")
-                print("1. Lancer le combat")
-                print("2. Accéder à la boutique")
-                print("3. Quitter le jeu")
-                choix_menu = input("Choisis une option (1-3) : ")
-                if choix_menu == "1":
-                    victoire = combat(pokemon_joueur, arene_feu)
-                    if victoire:
-                        # Ajout de la récompense de l'arène au portefeuille du dresseur
-                        dresseur.portefeuille += arene_feu.recompense
-                        print(f"\nTu as reçu {arene_feu.recompense} Pokédollars en récompense !")
-                        # Ajout du boss final au pokedex et deck
-                        boss_final = arene_feu.pokemon_defense[-1]
-                        if boss_final not in pokedex:
-                            pokedex.append(boss_final)
-                            dresseur.deck.append(boss_final)
+            # Nouvelle logique de progression d'arènes
+            arenes = [
+                ("Arène Flamme", arene_feu),
+                ("Arène Océan", arene_eau),
+                ("Arène Verdure", arene_plante)
+            ]
+            arene_index = 0
+            continuer_jeu = True
+            while arene_index < len(arenes) and continuer_jeu:
+                nom_arene, arene_courante = arenes[arene_index]
+                while True:
+                    print(f"\nMenu avant combat ({nom_arene}) :")
+                    print("1. Lancer le combat")
+                    print("2. Accéder à la boutique")
+                    print("3. Quitter le jeu")
+                    choix_menu = input("Choisis une option (1-3) : ")
+                    if choix_menu == "1":
+                        victoire = combat(pokemon_joueur, arene_courante, dresseur)
+                        if victoire:
+                            # Ajout de la récompense de l'arène au portefeuille du dresseur
+                            dresseur.portefeuille += arene_courante.recompense
+                            print(f"\nTu as reçu {arene_courante.recompense} Pokédollars en récompense !")
+                            # Ajout du boss final au pokedex et deck
+                            boss_final = arene_courante.pokemon_defense[-1]
+                            if boss_final not in pokedex:
+                                pokedex.append(boss_final)
+                                dresseur.deck.append(boss_final)
 
-                        # Choix d'un Pokémon supplémentaire parmi la liste des Pokémon de l'arène, excluant le boss final
-                        print("\nChoisis un Pokémon supplémentaire parmi la liste suivante :")
-                        # Exclure le boss final (dernier Pokémon de la liste)
-                        pokemons_choix = [pkmn for pkmn in arene_feu.pokemon_defense[:-1] if pkmn != pokemon_joueur]
-                        for i, pkmn in enumerate(pokemons_choix, start=1):
-                            print(f"{i}. {pkmn.nom} ({pkmn.type})")
+                            # Choix d'un Pokémon supplémentaire parmi la liste des Pokémon de l'arène, excluant le boss final
+                            print("\nChoisis un Pokémon supplémentaire parmi la liste suivante :")
+                            pokemons_choix = [pkmn for pkmn in arene_courante.pokemon_defense[:-1] if pkmn != pokemon_joueur]
+                            for i, pkmn in enumerate(pokemons_choix, start=1):
+                                print(f"{i}. {pkmn.nom} ({pkmn.type})")
 
-                        while True:
-                            choix = input("Numéro de ton choix : ")
-                            if choix.isdigit():
-                                choix = int(choix)
-                                if 1 <= choix <= len(pokemons_choix):
-                                    nouveau_pokemon = pokemons_choix[choix - 1]
-                                    if nouveau_pokemon not in pokedex:
-                                        pokedex.append(nouveau_pokemon)
-                                        dresseur.deck.append(nouveau_pokemon)  # Ajoute au pokedex du dresseur
-                                    print(f"\nTu as ajouté {nouveau_pokemon.nom} à ton équipe !")
-                                    break
-                            print("Choix invalide, réessaie.")
-                    else:
-                        print("Tu n'as pas réussi à vaincre l'arène. Tu peux réessayer.")
-                    # Après combat ou tentative, sortir de la menu boucle
-                    break
-                elif choix_menu == "2":
-                    while True:
-                        boutique.afficher_items()
-                        choix_achat = input("Veux-tu acheter un item ? (oui/non) : ").lower()
-                        if choix_achat in ['oui', 'o']:
-                            choix_item = input("Entre le numéro de l'item à acheter (ou '0' pour annuler) : ")
-                            if choix_item.isdigit():
-                                choix_item = int(choix_item)
-                                if choix_item == 0:
-                                    break
-                                elif 1 <= choix_item <= len(boutique.items):
-                                    item_choisi = boutique.items[choix_item - 1]
-                                    # Vérifier si le dresseur a assez d'argent
-                                    if dresseur.portefeuille < item_choisi.prix:
-                                        print("Tu n'as pas assez de Pokédollars pour cet item.")
-                                    else:
-                                        # Vérifier la limite de 2 exemplaires
-                                        nb_exemplaires = dresseur.inventaire.count(item_choisi)
-                                        if nb_exemplaires >= 2:
-                                            print("Tu as déjà 2 exemplaires de cet item. Tu ne peux pas en acheter plus.")
-                                        else:
-                                            dresseur.portefeuille -= item_choisi.prix
-                                            dresseur.inventaire.append(item_choisi)
-                                            print(f"Tu as acheté {item_choisi.nom} pour {item_choisi.prix} Pokédollars.")
+                            while True:
+                                choix = input("Numéro de ton choix : ")
+                                if choix.isdigit():
+                                    choix = int(choix)
+                                    if 1 <= choix <= len(pokemons_choix):
+                                        nouveau_pokemon = pokemons_choix[choix - 1]
+                                        if nouveau_pokemon not in pokedex:
+                                            pokedex.append(nouveau_pokemon)
+                                            dresseur.deck.append(nouveau_pokemon)
+                                        print(f"\nTu as ajouté {nouveau_pokemon.nom} à ton équipe !")
+                                        break
+                                print("Choix invalide, réessaie.")
+
+                            # Après victoire finale, menu de choix
+                            while True:
+                                print("\nQue veux-tu faire maintenant ?")
+                                if arene_index < len(arenes) - 1:
+                                    print("1. Continuer vers la prochaine arène")
                                 else:
-                                    print("Numéro invalide.")
-                            else:
-                                print("Entrée invalide.")
-                        elif choix_achat in ['non', 'n']:
+                                    print("1. Terminer le jeu")
+                                print("2. Aller à la boutique")
+                                print("3. Quitter le jeu")
+                                choix_post = input("Choisis une option (1-3) : ")
+                                if choix_post == "1":
+                                    if arene_index < len(arenes) - 1:
+                                        arene_index += 1
+                                        print(f"\nTu te diriges vers la prochaine arène : {arenes[arene_index][0]}")
+                                        break
+                                    else:
+                                        print("\nBravo, tu as terminé toutes les arènes ! Merci d'avoir joué !")
+                                        continuer_jeu = False
+                                        break
+                                elif choix_post == "2":
+                                    while True:
+                                        boutique.afficher_items()
+                                        choix_achat = input("Veux-tu acheter un item ? (oui/non) : ").lower()
+                                        if choix_achat in ['oui', 'o']:
+                                            choix_item = input("Entre le numéro de l'item à acheter (ou '0' pour annuler) : ")
+                                            if choix_item.isdigit():
+                                                choix_item = int(choix_item)
+                                                if choix_item == 0:
+                                                    break
+                                                elif 1 <= choix_item <= len(boutique.items):
+                                                    item_choisi = boutique.items[choix_item - 1]
+                                                    if dresseur.portefeuille < item_choisi.prix:
+                                                        print("Tu n'as pas assez de Pokédollars pour cet item.")
+                                                    else:
+                                                        nb_exemplaires = dresseur.inventaire.items.count(item_choisi)
+                                                        if nb_exemplaires >= 2:
+                                                            print("Tu as déjà 2 exemplaires de cet item. Tu ne peux pas en acheter plus.")
+                                                        else:
+                                                            dresseur.portefeuille -= item_choisi.prix
+                                                            dresseur.inventaire.items.append(item_choisi)
+                                                            print(f"Tu as acheté {item_choisi.nom} pour {item_choisi.prix} Pokédollars.")
+                                                else:
+                                                    print("Numéro invalide.")
+                                            else:
+                                                print("Entrée invalide.")
+                                        elif choix_achat in ['non', 'n']:
+                                            break
+                                        else:
+                                            print("Réponse invalide, tape 'oui' ou 'non'.")
+                                elif choix_post == "3":
+                                    print("\nTu as quitté le jeu. À bientôt !")
+                                    exit()
+                                else:
+                                    print("Choix invalide, réessaie.")
+                            # Sortir de la boucle de l'arène si on continue ou termine
                             break
                         else:
-                            print("Réponse invalide, tape 'oui' ou 'non'.")
-                elif choix_menu == "3":
-                    print("\nTu as quitté le jeu. À bientôt !")
-                    exit()
-                else:
-                    print("Choix invalide, réessaie.")
-
-            # Scène boutique
-            print("\nBravo pour ce combat ! Bienvenue dans la boutique Pokémon !!")
-            boutique_pkmn = input("Veux-tu y accéder ? (oui/non) ").lower()
-            if boutique_pkmn in ["oui", "o"]:
-                while True:
-                    boutique.afficher_items()
-                    choix_achat = input("Veux-tu acheter un item ? (oui/non) : ").lower()
-                    if choix_achat in ['oui', 'o']:
-                        choix_item = input("Entre le numéro de l'item à acheter (ou '0' pour annuler) : ")
-                        if choix_item.isdigit():
-                            choix_item = int(choix_item)
-                            if choix_item == 0:
-                                break
-                            elif 1 <= choix_item <= len(boutique.items):
-                                item_choisi = boutique.items[choix_item - 1]
-                                # Vérifier si le dresseur a assez d'argent
-                                if dresseur.portefeuille < item_choisi.prix:
-                                    print("Tu n'as pas assez de Pokédollars pour cet item.")
-                                else:
-                                    # Vérifier la limite de 2 exemplaires
-                                    nb_exemplaires = dresseur.inventaire.count(item_choisi)
-                                    if nb_exemplaires >= 2:
-                                        print("Tu as déjà 2 exemplaires de cet item. Tu ne peux pas en acheter plus.")
+                            print("Tu n'as pas réussi à vaincre l'arène. Tu peux réessayer.")
+                        # Après combat ou tentative, revenir au menu de l'arène
+                    elif choix_menu == "2":
+                        while True:
+                            boutique.afficher_items()
+                            choix_achat = input("Veux-tu acheter un item ? (oui/non) : ").lower()
+                            if choix_achat in ['oui', 'o']:
+                                choix_item = input("Entre le numéro de l'item à acheter (ou '0' pour annuler) : ")
+                                if choix_item.isdigit():
+                                    choix_item = int(choix_item)
+                                    if choix_item == 0:
+                                        break
+                                    elif 1 <= choix_item <= len(boutique.items):
+                                        item_choisi = boutique.items[choix_item - 1]
+                                        if dresseur.portefeuille < item_choisi.prix:
+                                            print("Tu n'as pas assez de Pokédollars pour cet item.")
+                                        else:
+                                            nb_exemplaires = dresseur.inventaire.items.count(item_choisi)
+                                            if nb_exemplaires >= 2:
+                                                print("Tu as déjà 2 exemplaires de cet item. Tu ne peux pas en acheter plus.")
+                                            else:
+                                                dresseur.portefeuille -= item_choisi.prix
+                                                dresseur.inventaire.items.append(item_choisi)
+                                                print(f"Tu as acheté {item_choisi.nom} pour {item_choisi.prix} Pokédollars.")
                                     else:
-                                        dresseur.portefeuille -= item_choisi.prix
-                                        dresseur.inventaire.append(item_choisi)
-                                        print(f"Tu as acheté {item_choisi.nom} pour {item_choisi.prix} Pokédollars.")
+                                        print("Numéro invalide.")
+                                else:
+                                    print("Entrée invalide.")
+                            elif choix_achat in ['non', 'n']:
+                                break
                             else:
-                                print("Numéro invalide.")
-                        else:
-                            print("Entrée invalide.")
-                    elif choix_achat in ['non', 'n']:
-                        break
+                                print("Réponse invalide, tape 'oui' ou 'non'.")
+                    elif choix_menu == "3":
+                        print("\nTu as quitté le jeu. À bientôt !")
+                        exit()
                     else:
-                        print("Réponse invalide, tape 'oui' ou 'non'.")
+                        print("Choix invalide, réessaie.")
             break
 
         elif lancer in ["non", "n"]:
