@@ -1,4 +1,4 @@
-# dictaciel.py
+# Classe representant notre dictaciel ( presentation de notre jeu )
 
 def dictaciel_logique():
     print("\n" + "="*60)
