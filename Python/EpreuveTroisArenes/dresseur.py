@@ -1,9 +1,12 @@
-#Ici j'offre la possibilité à l'utilisateur de choisir un dresseur pokémon parmis ceux connues OU créer le siens !
+from inventaire import Inventaire # J'importe la classe inventaire qui sera un attribut du dresseur ( il aura la possibilité de choisir des items )
+
 class Dresseur:
     def __init__(self, nom, description, deck):
         self.nom = nom
         self.description = description
         self.deck = deck
+        self.inventaire = Inventaire()
+        self.portefeuille = 500
         
     def presentation(self):
         print(f"👤 {self.nom} — {self.description}")

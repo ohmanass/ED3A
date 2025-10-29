@@ -1,8 +1,9 @@
-from pokemon import lst_pokemon, PokemonFeu, PokemonEau, PokemonPlante, efficacite
+from pokemon import lst_pkmn_feu, lst_pkmn_eau, lst_pkmn_plante, PokemonFeu, PokemonEau, PokemonPlante, efficacite
 from arene import Arene
 from item import Item
 from boutique import Boutique
 from dresseur import Dresseur, dresseurs_connus
+from dictaciel import dictaciel_logique
 import random
 
 # --- Création des items ---
@@ -10,36 +11,33 @@ potion = Item("Potion", 20, 300, "Restaure 20 PV.")
 super_potion = Item("Super Potion", 50, 700, "Restaure 50 PV.")
 boutique = Boutique([potion, super_potion])
 
-test = lst_pokemon[:5] # redefine your list 
-pkm_new = [] # remove that after
-for i in test: # you want to use comprehension list 
-
-    pkm_new.append(i)
 # --- Création des arènes ---
 arene_feu = Arene(
-    "Arène Flamme",                
-    "Feu",                            
-    "Pyro",                      
-    pkm_new,  
-    "Badge Flamme",                    
-    3,                                  
-    "Badge Flamme"                   
+    "Arène Flamme",
+    "Feu",
+    "Pyro",
+    [p for p in lst_pkmn_feu[:-1]],   # tous sauf le dernier
+    100,
+    3,
+    "Badge Flamme"
 )
+
 arene_eau = Arene(
     "Arène Océan",
     "Eau",
     "Aqua",
-    [lst_pokemon[6], lst_pokemon[7]],
-    "Badge Océan",
+    [p for p in lst_pkmn_eau[:-1]],   # tous sauf le dernier
+    200,
     3,
     "Badge Océan"
 )
+
 arene_plante = Arene(
     "Arène Verdure",
     "Plante",
     "Florina",
-    [lst_pokemon[12], lst_pokemon[13]],
-    "Badge Feuille",
+    [p for p in lst_pkmn_plante[:-1]],  # tous sauf le dernier
+    500,
     3,
     "Badge Feuille"
 )
@@ -82,11 +80,11 @@ def choisir_pokemon_depart():
     while True:
         choix = input("Numéro de ton choix : ")
         if choix == "1":
-            return lst_pokemon[0]  # Salameche
+            return lst_pkmn_feu[0]  # Salameche
         elif choix == "2":
-            return lst_pokemon[5]  # Carapuce
+            return lst_pkmn_eau[0]  # Carapuce
         elif choix == "3":
-            return lst_pokemon[10] # Bulbizarre
+            return lst_pkmn_plante[0] # Bulbizarre
         else:
             print("Choix invalide, réessaie.")
 
@@ -94,11 +92,7 @@ def choisir_pokemon_depart():
 def combat(pokemon_joueur, arene):
     print(f"\nDébut du combat dans {arene.nom} contre les Pokémon de type {arene.type_arene}.")
 
-    niveau_actuel = 1
-    while niveau_actuel < 5:
-        adversaire = random.choice(arene.pokemon_defense)
-        print(f"\nCombat niveau {niveau_actuel} : {pokemon_joueur.nom} ({pokemon_joueur.type}) contre {adversaire.nom} ({adversaire.type})")
-
+    def combat_contre(adversaire, pokemon_joueur):
         adversaire_pv_initial = adversaire.pv
         pokemon_joueur_pv_initial = pokemon_joueur.pv
 
@@ -115,9 +109,9 @@ def combat(pokemon_joueur, arene):
             degats = int(attaque_degats * mult)
 
             if mult > 1:
-                print("C’est super efficace.")
+                print(f"C’est super efficace. En choisissant {pokemon_joueur.nom} tu bénéficies du bonus de type !")
             elif mult < 1:
-                print("Ce n’est pas très efficace.")
+                print(f"Ce n’est pas très efficace. Ton adversaire bénéficie du bonus de type face à ton {pokemon_joueur.nom}")
 
             print(f"{adversaire.nom} utilise {attaque_nom} et inflige {degats} dégâts.")
             pokemon_joueur.pv = max(0, pokemon_joueur.pv - degats)
@@ -127,22 +121,27 @@ def combat(pokemon_joueur, arene):
                 print(f"\n{pokemon_joueur.nom} est K.O. Tu as perdu le combat.")
                 break
 
-        if adversaire.pv <= 0:
+        result = adversaire.pv <= 0
+        pokemon_joueur.pv = pokemon_joueur_pv_initial
+        adversaire.pv = adversaire_pv_initial
+        return result
+
+    niveau_actuel = 1
+    while niveau_actuel < 5:
+        adversaire = random.choice(arene.pokemon_defense)
+        print(f"\nCombat niveau {niveau_actuel} : {pokemon_joueur.nom} ({pokemon_joueur.type}) contre {adversaire.nom} ({adversaire.type})")
+
+        victoire = combat_contre(adversaire, pokemon_joueur)
+
+        if victoire:
             print(f"Tu as gagné le combat niveau {niveau_actuel}.\n")
             niveau_actuel += 1
-            pokemon_joueur.pv = pokemon_joueur_pv_initial
-            adversaire.pv = adversaire_pv_initial
         else:
             print("Tu peux réessayer ce niveau.")
-            pokemon_joueur.pv = pokemon_joueur_pv_initial
-            adversaire.pv = adversaire_pv_initial
 
     # Combat final (niveau 5) contre le boss de notre arène
     adversaire = arene.pokemon_defense[-1]
     print(f"\nCombat final contre le boss {adversaire.nom} dans {arene.nom}.")
-
-    adversaire_pv_initial = adversaire.pv
-    pokemon_joueur_pv_initial = pokemon_joueur.pv
 
     while pokemon_joueur.pv > 0 and adversaire.pv > 0:
         print("\n--- Ton tour ---")
@@ -168,8 +167,8 @@ def combat(pokemon_joueur, arene):
         if pokemon_joueur.pv <= 0:
             print(f"\n{pokemon_joueur.nom} est K.O. Tu as perdu le combat final.")
             print("Tu peux réessayer le combat final.")
-            pokemon_joueur.pv = pokemon_joueur_pv_initial
-            adversaire.pv = adversaire_pv_initial
+            pokemon_joueur.pv = pokemon_joueur.pv  # reset handled by loop
+            adversaire.pv = adversaire.pv  # reset handled by loop
 
     if adversaire.pv <= 0:
         print(f"\nFélicitations ! Tu as vaincu le boss {adversaire.nom} et obtenu le {arene.badge} !")
@@ -179,8 +178,11 @@ def combat(pokemon_joueur, arene):
 
 # --- Menu principal ---
 def menu_principal():
-    print("Bienvenue dans le monde des Pokémon !")
+    print("Bienvenue dans Pokémon : Le combat des trois arènes !")
     print("Prépare-toi pour une aventure incroyable.\n")
+    dictaciel = input("\Veux tu lancer le dictaciel ? (oui/non) : ").lower()
+    if dictaciel in ["oui", "o"]:
+        dictaciel_logique()
 
     dresseur = choisir_dresseur()
 
@@ -195,6 +197,7 @@ def menu_principal():
             # Choix de notre Pokémon de départ
             pokemon_joueur = choisir_pokemon_depart()
             pokedex.append(pokemon_joueur)
+            dresseur.deck.append(pokemon_joueur)
             print(f"\nTu as choisi {pokemon_joueur.nom} ({pokemon_joueur.type}) ! Bonne chance !")
 
             # Par défaut j'ai choisi l'arène Flamme en tant que première arène 
@@ -202,6 +205,12 @@ def menu_principal():
             victoire = combat(pokemon_joueur, arene_feu)
 
             if victoire:
+                # Ajout du boss final au pokedex et deck
+                boss_final = arene_feu.pokemon_defense[-1]
+                if boss_final not in pokedex:
+                    pokedex.append(boss_final)
+                    dresseur.deck.append(boss_final)
+
                 # Choix d'un Pokémon supplémentaire parmi la liste des Pokémon de l'arène, excluant le boss final
                 print("\nChoisis un Pokémon supplémentaire parmi la liste suivante :")
                 # Exclure le boss final (dernier Pokémon de la liste)
@@ -215,15 +224,18 @@ def menu_principal():
                         choix = int(choix)
                         if 1 <= choix <= len(pokemons_choix):
                             nouveau_pokemon = pokemons_choix[choix - 1]
-                            pokedex.append(nouveau_pokemon)
+                            if nouveau_pokemon not in pokedex:
+                                pokedex.append(nouveau_pokemon)
+                                dresseur.deck.append(nouveau_pokemon)  # Ajoute au pokedex du dresseur
                             print(f"\nTu as ajouté {nouveau_pokemon.nom} à ton équipe !")
-                            dresseur.deck.append(nouveau_pokemon)  # Ajoute au pokedex du dresseur
                             break
                     print("Choix invalide, réessaie.")
 
             # Scène boutique
-            print("\nAprès le combat, tu découvres la boutique.")
-            boutique.afficher_items()
+            print("\nBravo pour ce combat ! Bienvenue dans la boutique Pokémon !!")
+            boutique_pkmn = input("Veux-tu y accéder ? (oui/non) ").lower()
+            if boutique_pkmn in ["oui", "o"]:
+                boutique.afficher_items()
             break
 
         elif lancer in ["non", "n"]:

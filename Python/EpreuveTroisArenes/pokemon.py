@@ -69,7 +69,8 @@ lst_pkmn_feu = [
     PokemonFeu("Ponyta", 50, [("Charge", 10), ("Roue de Feu", 20), ("Flamme Ultime", 30)]),
     PokemonFeu("Goupix", 38, [("Vive-Attaque", 8), ("Flammèche", 15), ("Déflagration", 28)]),
     PokemonFeu("Arcanin", 90, [("Crocs Feu", 22), ("Morsure", 18), ("Lance-Flammes", 30)]),
-    PokemonFeu("Magmar", 65, [("Poing Feu", 20), ("Jet de Flamme", 25), ("Explosion", 35)])
+    PokemonFeu("Magmar", 65, [("Poing Feu", 20), ("Jet de Flamme", 25), ("Explosion", 35)]),
+    PokemonFeu("Pyroli", 80, [("Flammèche", 25), ("Lance-Flammes", 35), ("Éclat Feu", 30)])  # Boss final
 ]
 
 lst_pkmn_eau = [
@@ -77,7 +78,8 @@ lst_pkmn_eau = [
     PokemonEau("Magicarpe", 20, [("Trempette", 1), ("Rebond", 8), ("Fléau", 10)]),
     PokemonEau("Stari", 30, [("Écume", 10), ("Laser Glace", 20), ("Bulles d’O", 15)]),
     PokemonEau("Tartard", 60, [("Hydrocanon", 25), ("Coup de Poing", 15), ("Cascade", 20)]),
-    PokemonEau("Lokhlass", 130, [("Surf", 25), ("Laser Glace", 28), ("Onde Boréale", 30)])
+    PokemonEau("Lokhlass", 130, [("Surf", 25), ("Laser Glace", 28), ("Onde Boréale", 30)]),
+    PokemonEau("Léviator", 150, [("Hydrocanon", 40), ("Morsure", 25), ("Draco-Rage", 35)])  # Boss final
 ]
 
 lst_pkmn_plante = [
@@ -85,5 +87,6 @@ lst_pkmn_plante = [
     PokemonPlante("Mystherbe", 60, [("Vampigraine", 12), ("Acide", 10), ("Méga-Sangsue", 18)]),
     PokemonPlante("Chétiflor", 60, [("Tranch’Herbe", 14), ("Fouet Lianes", 12), ("Poudre Dodo", 10)]),
     PokemonPlante("Arcko", 40, [("Vive-Attaque", 10), ("Lame Feuille", 18), ("Griffe", 8)]),
-    PokemonPlante("Joliflor", 60, [("Giga-Sangsue", 20), ("Tranch’Herbe", 15), ("Canon Graine", 18)])
+    PokemonPlante("Joliflor", 60, [("Giga-Sangsue", 20), ("Tranch’Herbe", 15), ("Canon Graine", 18)]),
+    PokemonPlante("Jardinelle", 90, [("Canon Graine", 25), ("Tranch’Herbe", 20), ("Fouet Lianes", 15)])  # Boss final
 ]
