@@ -22,7 +22,19 @@ class Pokemon:
         for i, (nom, degats) in enumerate(self.attaques, 1):
             print(f"  {i}. {nom} ({degats} dégâts)")
 
+    _avantage_message_shown = {}
+
     def attaquer(self, cible):
+        # Afficher le message d'avantage une seule fois par combat (par paire de Pokémon)
+        key = (id(self), id(cible))
+        mult = efficacite[self.type][cible.type]
+        if key not in Pokemon._avantage_message_shown:
+            if mult > 1:
+                print(f"{self.nom} ({self.type}) a l'avantage sur {cible.nom} ({cible.type}) !")
+            elif mult < 1:
+                print(f"{cible.nom} ({cible.type}) a l'avantage sur {self.nom} ({self.type}) !")
+            Pokemon._avantage_message_shown[key] = True
+
         print(f"\nChoisis une attaque pour {self.nom} :")
         for i, (nom, degats) in enumerate(self.attaques, 1):
             print(f"{i}. {nom} ({degats} dégâts)")
@@ -34,13 +46,9 @@ class Pokemon:
                 break
             print("Choix invalide, réessaie.")
 
-        mult = efficacite[self.type][cible.type]
         degats = int(attaque_degats * mult)
 
-        if mult > 1:
-            print("C’est super efficace !")
-        elif mult < 1:
-            print("Ce n’est pas très efficace…")
+        # Suppression des messages "C’est super efficace !" et "Ce n’est pas très efficace…"
 
         print(f"{self.nom} utilise {attaque_nom} sur {cible.nom} et inflige {degats} dégâts !")
         cible.pv = max(0, cible.pv - degats)
