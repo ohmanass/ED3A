@@ -64,22 +64,23 @@ class PokemonPlante(Pokemon):
 
 
 # --- Liste complète de Pokémon ---
-lst_pokemon = [
-    # --- Feu ---
+lst_pkmn_feu = [
     PokemonFeu("Salamèche", 39, [("Flammèche", 15), ("Griffe", 10), ("Lance-Flammes", 25)]),
     PokemonFeu("Ponyta", 50, [("Charge", 10), ("Roue de Feu", 20), ("Flamme Ultime", 30)]),
     PokemonFeu("Goupix", 38, [("Vive-Attaque", 8), ("Flammèche", 15), ("Déflagration", 28)]),
     PokemonFeu("Arcanin", 90, [("Crocs Feu", 22), ("Morsure", 18), ("Lance-Flammes", 30)]),
-    PokemonFeu("Magmar", 65, [("Poing Feu", 20), ("Jet de Flamme", 25), ("Explosion", 35)]),
+    PokemonFeu("Magmar", 65, [("Poing Feu", 20), ("Jet de Flamme", 25), ("Explosion", 35)])
+]
 
-    # --- Eau ---
+lst_pkmn_eau = [
     PokemonEau("Carapuce", 44, [("Pistolet à O", 12), ("Charge", 8), ("Hydrocanon", 25)]),
     PokemonEau("Magicarpe", 20, [("Trempette", 1), ("Rebond", 8), ("Fléau", 10)]),
     PokemonEau("Stari", 30, [("Écume", 10), ("Laser Glace", 20), ("Bulles d’O", 15)]),
     PokemonEau("Tartard", 60, [("Hydrocanon", 25), ("Coup de Poing", 15), ("Cascade", 20)]),
-    PokemonEau("Lokhlass", 130, [("Surf", 25), ("Laser Glace", 28), ("Onde Boréale", 30)]),
+    PokemonEau("Lokhlass", 130, [("Surf", 25), ("Laser Glace", 28), ("Onde Boréale", 30)])
+]
 
-    # --- Plante ---
+lst_pkmn_plante = [
     PokemonPlante("Bulbizarre", 45, [("Fouet Lianes", 15), ("Tranch’Herbe", 12), ("Canon Graine", 20)]),
     PokemonPlante("Mystherbe", 60, [("Vampigraine", 12), ("Acide", 10), ("Méga-Sangsue", 18)]),
     PokemonPlante("Chétiflor", 60, [("Tranch’Herbe", 14), ("Fouet Lianes", 12), ("Poudre Dodo", 10)]),

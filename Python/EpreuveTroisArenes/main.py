@@ -13,6 +13,7 @@ boutique = Boutique([potion, super_potion])
 test = lst_pokemon[:5] # redefine your list 
 pkm_new = [] # remove that after
 for i in test: # you want to use comprehension list 
+
     pkm_new.append(i)
 # --- Création des arènes ---
 arene_feu = Arene(
