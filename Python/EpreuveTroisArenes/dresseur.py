@@ -1,7 +1,9 @@
 from inventaire import Inventaire # J'importe la classe inventaire qui sera un attribut du dresseur ( il aura la possibilité de choisir des items )
 
 class Dresseur:
-    def __init__(self, nom, description, deck):
+    def __init__(self, nom, description, deck=None):
+        if deck is None:
+            deck = []
         self.nom = nom
         self.description = description
         self.deck = deck

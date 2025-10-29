@@ -14,13 +14,13 @@ def couleur_pokemon(pokemon):
 # --- Création des items et arènes ---
 boutique = Boutique(list_items)
 arene_feu = Arene(
-    "Arène Flamme", "Feu", "Pyro", [p for p in lst_pkmn_feu[:-1]], 100, 3, "Badge Flamme"
+    "Arène Flamme (Feu)", "Feu", "Pyro", [p for p in lst_pkmn_feu[:-1]], 100, 3, "Badge Flamme"
 )
 arene_eau = Arene(
-    "Arène Océan", "Eau", "Aqua", [p for p in lst_pkmn_eau[:-1]], 200, 3, "Badge Océan"
+    "Arène Océan (Eau)", "Eau", "Aqua", [p for p in lst_pkmn_eau[:-1]], 200, 3, "Badge Océan"
 )
 arene_plante = Arene(
-    "Arène Verdure", "Plante", "Florina", [p for p in lst_pkmn_plante[:-1]], 500, 3, "Badge Feuille"
+    "Arène Verdure (Plante)", "Plante", "Florina", [p for p in lst_pkmn_plante[:-1]], 500, 3, "Badge Feuille"
 )
 
 # --- Fonction : Choisir un dresseur ---
@@ -78,8 +78,9 @@ def choisir_pokemon_depart():
         else:
             print("Choix invalide, réessaie.")
 
-# --- Combat tour par tour ---
-def scene_combat(pokemon_joueur, arene, dresseur):
+
+# --- Combat arène (niveaux 1 à 4) ---
+def combat_arene(pokemon_joueur, arene, dresseur):
     os.system('cls' if os.name == 'nt' else 'clear')
     print("=" * 70)
     print(f" SCÈNE : COMBAT DANS {arene.nom.upper()} ".center(70, "="))
@@ -128,6 +129,7 @@ def scene_combat(pokemon_joueur, arene, dresseur):
             tour += 1
             input("\nAppuie sur Entrée pour continuer...")
         result = adversaire.pv <= 0
+        # Réinitialiser PV après combat
         pokemon_joueur.pv = pokemon_joueur_pv_initial
         adversaire.pv = adversaire_pv_initial
         print("-" * 40)
@@ -136,7 +138,7 @@ def scene_combat(pokemon_joueur, arene, dresseur):
 
     niveau_actuel = 1
     while niveau_actuel < 5:
-        adversaire = random.choice(arene.pokemon_defense)
+        adversaire = random.choice(arene.pokemon_defense[:-1])
         os.system('cls' if os.name == 'nt' else 'clear')
         print("=" * 70)
         print(f" SCÈNE : COMBAT NIVEAU {niveau_actuel} ".center(70, "="))
@@ -174,8 +176,10 @@ def scene_combat(pokemon_joueur, arene, dresseur):
                 exit()
             else:
                 print("Choix invalide, réessaie.")
+    return True
 
-    # Combat final (niveau 5) contre le boss de l'arène
+# --- Combat boss (niveau 5) ---
+def combat_boss(pokemon_joueur, arene, dresseur):
     adversaire = arene.pokemon_defense[-1]
     os.system('cls' if os.name == 'nt' else 'clear')
     print("=" * 70)
@@ -186,6 +190,7 @@ def scene_combat(pokemon_joueur, arene, dresseur):
     tour = 1
     pokemon_joueur_pv_initial = pokemon_joueur.pv
     adversaire_pv_initial = adversaire.pv
+    boss_ko = False
     while pokemon_joueur.pv > 0 and adversaire.pv > 0:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("=" * 70)
@@ -197,8 +202,10 @@ def scene_combat(pokemon_joueur, arene, dresseur):
         print("-" * 40)
         print("TON TOUR :")
         pokemon_joueur.attaquer(adversaire)
+        # Tester la victoire avant remise à zéro des PV
         if adversaire.pv <= 0:
             print(f"{adversaire.nom.upper()} EST K.O.")
+            boss_ko = True
             input("\nAppuie sur Entrée pour continuer...")
             break
         print("TOUR DE L'ADVERSAIRE :")
@@ -214,10 +221,10 @@ def scene_combat(pokemon_joueur, arene, dresseur):
         tour += 1
         input("\nAppuie sur Entrée pour continuer...")
     print("-" * 40)
-    # Remise à zéro des PV
+    # Conserver les PV initiaux pour remise à zéro après l'affichage
     pokemon_joueur.pv = pokemon_joueur_pv_initial
     adversaire.pv = adversaire_pv_initial
-    if adversaire.pv <= 0:
+    if boss_ko:
         print(f"\nFÉLICITATIONS ! TU AS VAINCU LE BOSS {adversaire.nom.upper()} ET OBTENU LE {arene.badge.upper()} !")
         input("\nAppuie sur Entrée pour continuer...")
         return True
@@ -309,6 +316,45 @@ def scene_dictaciel():
     input("\nAppuie sur Entrée pour continuer...")
 
 # --- Menu principal ---
+def afficher_pokedex(pokedex):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("=" * 70)
+    print(" SCÈNE : POKÉDEX DU DRESSEUR ".center(70, "="))
+    print("=" * 70)
+    if not pokedex:
+        print("Ton Pokédex est vide.")
+    else:
+        for i, pkmn in enumerate(pokedex, start=1):
+            print(f"{i}. {pkmn.nom} ({pkmn.type})")
+    input("\nAppuie sur Entrée pour revenir au menu...")
+
+def choisir_pokemon_pokedex(pokedex, pokemon_joueur):
+    if not pokedex:
+        print("Ton Pokédex est vide.")
+        input("\nAppuie sur Entrée pour continuer...")
+        return pokemon_joueur
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=" * 70)
+        print(" SCÈNE : CHOIX DU POKÉMON POUR LE COMBAT ".center(70, "="))
+        print("=" * 70)
+        for i, pkmn in enumerate(pokedex, start=1):
+            print(f"{i}. {pkmn.nom} ({pkmn.type})")
+        print("0. Garder le Pokémon actuel")
+        choix = input("Sélectionne le numéro du Pokémon à utiliser pour ce combat : ")
+        if choix.isdigit():
+            choix = int(choix)
+            if choix == 0:
+                print(f"\nTu gardes {pokemon_joueur.nom.upper()} pour ce combat.")
+                input("\nAppuie sur Entrée pour continuer...")
+                return pokemon_joueur
+            elif 1 <= choix <= len(pokedex):
+                selection = pokedex[choix - 1]
+                print(f"\nTu as choisi {selection.nom.upper()} pour ce combat.")
+                input("\nAppuie sur Entrée pour continuer...")
+                return selection
+        print("Choix invalide, réessaie.")
+
 def menu_principal():
     os.system('cls' if os.name == 'nt' else 'clear')
     print("#" * 70)
@@ -339,14 +385,15 @@ def menu_principal():
             print("\nTU ENTRE DANS LA PREMIÈRE ARÈNE : ARÈNE FLAMME.")
             input("\nAppuie sur Entrée pour continuer...")
             arenes = [
-                ("Arène Flamme", arene_feu),
-                ("Arène Océan", arene_eau),
-                ("Arène Verdure", arene_plante)
+                ("Arène Flamme (Feu)", arene_feu),
+                ("Arène Océan (Eau)", arene_eau),
+                ("Arène Verdure (Plante)", arene_plante)
             ]
             arene_index = 0
             continuer_jeu = True
             while arene_index < len(arenes) and continuer_jeu:
                 nom_arene, arene_courante = arenes[arene_index]
+                # Menu avant arène
                 while True:
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print("=" * 70)
@@ -355,19 +402,38 @@ def menu_principal():
                     print("1. Lancer le combat")
                     print("2. Accéder à la boutique")
                     print("3. Afficher le dictaciel")
-                    print("4. Quitter le jeu")
-                    choix_menu = input("Choisis une option (1-4) : ")
+                    print("4. Consulter le Pokédex")
+                    print("5. Quitter le jeu")
+                    choix_menu = input("Choisis une option (1-5) : ")
                     if choix_menu == "1":
-                        victoire = scene_combat(pokemon_joueur, arene_courante, dresseur)
-                        if victoire:
-                            dresseur.portefeuille += arene_courante.recompense
-                            print(f"\n>>> TU AS REÇU {arene_courante.recompense} POKÉDOLLARS EN RÉCOMPENSE !")
-                            boss_final = arene_courante.pokemon_defense[-1]
-                            if boss_final not in pokedex:
-                                pokedex.append(boss_final)
-                                dresseur.deck.append(boss_final)
-                            print("\nCHOISIS UN POKÉMON SUPPLÉMENTAIRE PARMI LA LISTE SUIVANTE :")
-                            pokemons_choix = [pkmn for pkmn in arene_courante.pokemon_defense[:-1] if pkmn != pokemon_joueur]
+                        # Proposer de choisir un Pokémon du Pokédex avant le combat
+                        pokemon_joueur = choisir_pokemon_pokedex(pokedex, pokemon_joueur)
+                        # Combats arène niveaux 1 à 4
+                        victoire_niveaux = combat_arene(pokemon_joueur, arene_courante, dresseur)
+                        if not victoire_niveaux:
+                            print("TU N'AS PAS RÉUSSI À VAINCRE L'ARÈNE. TU PEUX RÉESSAYER.")
+                            input("\nAppuie sur Entrée pour continuer...")
+                            continue
+                        # Combat boss
+                        victoire_boss = False
+                        while not victoire_boss:
+                            victoire_boss = combat_boss(pokemon_joueur, arene_courante, dresseur)
+                            if not victoire_boss:
+                                print("TU N'AS PAS RÉUSSI À VAINCRE LE BOSS. TU PEUX RÉESSAYER.")
+                                input("\nAppuie sur Entrée pour continuer...")
+                        # Récompense
+                        dresseur.portefeuille += arene_courante.recompense
+                        print(f"\n>>> TU AS REÇU {arene_courante.recompense} POKÉDOLLARS EN RÉCOMPENSE !")
+                        boss_final = arene_courante.pokemon_defense[-1]
+                        if boss_final not in pokedex:
+                            pokedex.append(boss_final)
+                            dresseur.deck.append(boss_final)
+                        print("\nCHOISIS UN POKÉMON SUPPLÉMENTAIRE PARMI LA LISTE SUIVANTE :")
+                        pokemons_choix = [pkmn for pkmn in arene_courante.pokemon_defense[:-1] if pkmn not in pokedex]
+                        if not pokemons_choix:
+                            print("(Tous les Pokémon de cette arène sont déjà dans ton Pokédex.)")
+                            input("\nAppuie sur Entrée pour continuer...")
+                        else:
                             for i, pkmn in enumerate(pokemons_choix, start=1):
                                 print(f"{i}. {pkmn.nom} ({pkmn.type})")
                             while True:
@@ -383,50 +449,51 @@ def menu_principal():
                                         input("\nAppuie sur Entrée pour continuer...")
                                         break
                                 print("Choix invalide, réessaie.")
-                            # Menu post-victoire arène
-                            while True:
-                                os.system('cls' if os.name == 'nt' else 'clear')
-                                print("=" * 70)
-                                print(" SCÈNE : APRÈS VICTOIRE D'ARÈNE ".center(70, "="))
-                                print("=" * 70)
-                                print("QUE VEUX-TU FAIRE MAINTENANT ?")
+                        # Menu post-victoire arène/boss
+                        while True:
+                            os.system('cls' if os.name == 'nt' else 'clear')
+                            print("=" * 70)
+                            print(" SCÈNE : APRÈS VICTOIRE D'ARÈNE ".center(70, "="))
+                            print("=" * 70)
+                            print("QUE VEUX-TU FAIRE MAINTENANT ?")
+                            if arene_index < len(arenes) - 1:
+                                print("1. Continuer vers la prochaine arène")
+                            else:
+                                print("1. Terminer le jeu")
+                            print("2. Aller à la boutique")
+                            print("3. Afficher le dictaciel")
+                            print("4. Quitter le jeu")
+                            choix_post = input("Choisis une option (1-4) : ")
+                            if choix_post == "1":
                                 if arene_index < len(arenes) - 1:
-                                    print("1. Continuer vers la prochaine arène")
+                                    arene_index += 1
+                                    print(f"\nTU TE DIRIGES VERS LA PROCHAINE ARÈNE : {arenes[arene_index][0].upper()}")
+                                    input("\nAppuie sur Entrée pour continuer...")
+                                    break
                                 else:
-                                    print("1. Terminer le jeu")
-                                print("2. Aller à la boutique")
-                                print("3. Afficher le dictaciel")
-                                print("4. Quitter le jeu")
-                                choix_post = input("Choisis une option (1-4) : ")
-                                if choix_post == "1":
-                                    if arene_index < len(arenes) - 1:
-                                        arene_index += 1
-                                        print(f"\nTU TE DIRIGES VERS LA PROCHAINE ARÈNE : {arenes[arene_index][0].upper()}")
-                                        input("\nAppuie sur Entrée pour continuer...")
-                                        break
-                                    else:
-                                        print("\nBRAVO, TU AS TERMINÉ TOUTES LES ARÈNES ! MERCI D'AVOIR JOUÉ !")
-                                        input("\nAppuie sur Entrée pour continuer...")
-                                        continuer_jeu = False
-                                        break
-                                elif choix_post == "2":
-                                    scene_boutique(dresseur)
-                                elif choix_post == "3":
-                                    scene_dictaciel()
-                                elif choix_post == "4":
-                                    print("\nTU AS QUITTÉ LE JEU. À BIENTÔT !")
-                                    exit()
-                                else:
-                                    print("Choix invalide, réessaie.")
-                            break
-                        else:
-                            print("TU N'AS PAS RÉUSSI À VAINCRE L'ARÈNE. TU PEUX RÉESSAYER.")
-                            input("\nAppuie sur Entrée pour continuer...")
+                                    print("\nBRAVO, TU AS TERMINÉ TOUTES LES ARÈNES ! MERCI D'AVOIR JOUÉ !")
+                                    input("\nAppuie sur Entrée pour continuer...")
+                                    continuer_jeu = False
+                                    break
+                            elif choix_post == "2":
+                                scene_boutique(dresseur)
+                            elif choix_post == "3":
+                                scene_dictaciel()
+                            elif choix_post == "4":
+                                print("\nTU AS QUITTÉ LE JEU. À BIENTÔT !")
+                                exit()
+                            else:
+                                print("Choix invalide, réessaie.")
+                        break
                     elif choix_menu == "2":
                         scene_boutique(dresseur)
                     elif choix_menu == "3":
                         scene_dictaciel()
                     elif choix_menu == "4":
+                        afficher_pokedex(pokedex)
+                        # Après consultation du Pokédex, proposer de choisir un Pokémon pour le combat
+                        pokemon_joueur = choisir_pokemon_pokedex(pokedex, pokemon_joueur)
+                    elif choix_menu == "5":
                         print("\nTU AS QUITTÉ LE JEU. À BIENTÔT !")
                         exit()
                     else:
