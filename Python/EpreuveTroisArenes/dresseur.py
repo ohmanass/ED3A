@@ -10,6 +10,33 @@ class Dresseur:
         
     def presentation(self):
         print(f"👤 {self.nom} — {self.description}")
+        
+    def ajouter_item(self, item):
+        if self.inventaire.items.get(item, 0) < 2:
+            self.inventaire.ajouter(item)
+        else:
+            print(f"Vous avez déjà 2 exemplaires de {item}.")
+            
+    def afficher_inventaire(self):
+        print(f"Inventaire de {self.nom} :")
+        for item, quantite in self.inventaire.items.items():
+            print(f"- {item} : {quantite}")
+            
+    def ajouter_argent(self, montant):
+        self.portefeuille += montant
+        
+    def payer(self, montant):
+        if self.portefeuille >= montant:
+            self.portefeuille -= montant
+            return True
+        else:
+            print("Fonds insuffisants pour effectuer ce paiement.")
+            return False
+        
+    def afficher_deck(self):
+        print(f"Deck de {self.nom} :")
+        for pokemon in self.deck:
+            print(f"- {pokemon.nom} | Type : {pokemon.type} | PV : {pokemon.pv}")
 
 
 # --- Liste des dresseurs connus ---
